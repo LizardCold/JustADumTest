@@ -44,10 +44,11 @@ jobs:
         run: |
           echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
       - 
-        name: "Build and push frontend image"
-        run:  |
-                docker build ./frontend --tag ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG
-                docker push ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG
+        name: "Build frontend image"
+        run: docker build ./frontend --tag ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG
+      - 
+        name: "Push frontend image"
+        run: docker push ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG
       - 
         name: "Build and push backend image"
         run: |
@@ -59,6 +60,11 @@ jobs:
     permissions:
       contents: read
       packages: write
+
+    needs: [
+       build
+    ]
+    if: ${{ always() && !cancelled() && needs.build.result == 'success' }}
 
     steps:
       - name: Checkout repository
@@ -83,10 +89,10 @@ jobs:
       - 
         name: "Test frontend image"
         run: |
-          docker run --rm ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG
-          && docker tag ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG ghcr.io/${{ env.REPO }}/backend:$TESTED_TAG
+          docker run --health-cmd "curl -f http://localhost:3000/ || exit 1" --stop-timeout 15 --health-timeout 15 ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG --stop-timeout 15
+          && docker tag ghcr.io/${{ env.REPO }}/frontend:$LATEST_TAG ghcr.io/${{ env.REPO }}/frontend:$TESTED_TAG
       - 
         name: "Test backend image"
         run: |
-          docker run --rm ghcr.io/${{ env.REPO }}/backend:$LATEST_TAG
+          docker run --health-cmd "curl -f http://localhost:5000/ || exit 1" --stop-timeout 15 --health-timeout 15 ghcr.io/${{ env.REPO }}/backend:$LATEST_TAG 
           && docker tag ghcr.io/${{ env.REPO }}/backend:$LATEST_TAG ghcr.io/${{ env.REPO }}/backend:$TESTED_TAG
