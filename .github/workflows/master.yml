@@ -49,3 +49,20 @@ jobs:
         run: |
               docker build ./backend --tag ghcr.io/${{ env.REPO }}/backend:1.0
               docker push ghcr.io/${{ env.REPO }}/backend:1.0
+
+  Test:
+    runs-on: ubuntu-latest
+  
+    permissions:
+      contents: read
+      packages: write
+  
+    steps:
+      - 
+        name: "Test frontend image"
+        run: |
+          docker run --rm ghcr.io/${{ env.REPO }}/frontend:1.0
+      - 
+        name: "Test backend image"
+        run: |
+          docker run --rm ghcr.io/${{ env.REPO }}/backend:1.0   
