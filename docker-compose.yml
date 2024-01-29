@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  sila-database:
+    container_name: sila-database
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - sila
+    ports:
+      - "33060:33060"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  sila-backend:
+    container_name: sila-backend
+    image: ${DOCKER_REGISTRY-}sila-backend:1.0
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_CONNECTION=${MYSQL_CONNECTION}
+    ports:
+      - "5000:5000"
+    networks:
+      - sila
+    depends_on:
+      - sila-database
+    links:
+      - sila-database
+
+  sila-frontend:
+    container_name: sila-frontend
+    image: ${DOCKER_REGISTRY-}sila-frontend:1.0
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - sila
+    depends_on:
+      - sila-backend
+    links:
+      - sila-backend
+
+networks:
+  sila:
