@@ -38,7 +38,7 @@ jobs:
           context: ./frontend/
           file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:1.0
+          tags: frontend:1.0
       -
         name: Build and push backend image
         uses: docker/build-push-action@v5
@@ -46,4 +46,4 @@ jobs:
           context: ./frontend/
           file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:1.0
+          tags: backend:1.0
