@@ -32,9 +32,18 @@ jobs:
       #     username: ${{ secrets.AZURE_CLIENT_ID }}
       #     password: ${{ secrets.AZURE_CLIENT_SECRET }}
       -
-        name: Build and push
+        name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./frontend/
+          file: Dockerfile
           push: true
-          tags: user/app:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:1.0
+      -
+        name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend/
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:1.0
